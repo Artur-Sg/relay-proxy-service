@@ -6,7 +6,7 @@ Skeleton Python service that accepts HTTP and WebSocket requests and proxies the
 - Python 3.11+
 
 ## Setup
-1. Create `.env` from `.env.example` and adjust `UPSTREAMS`.
+1. Create `.env` from `.env.example` and adjust `UPSTREAMS` (and `WS_UPSTREAMS` if needed).
 2. Install dependencies.
 
 ```bash
@@ -67,6 +67,7 @@ curl -i -X POST http://localhost:8080/orders \
 Configure `.env` to use real upstreams:
 ```
 UPSTREAMS=https://polygon-amoy.api.onfinality.io/rpc?apikey=YOUR_API_KEY,https://polygon-amoy.drpc.org
+WS_UPSTREAMS=
 UPSTREAM_STRATEGY=random
 ```
 

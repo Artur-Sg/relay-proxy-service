@@ -24,7 +24,8 @@ HOP_BY_HOP_HEADERS = {
 
 @dataclass(slots=True)
 class Settings:
-    upstreams: list[str]
+    http_upstreams: list[str]
+    ws_upstreams: list[str]
     strategy: str
     connect_timeout: float
     read_timeout: float
@@ -37,17 +38,21 @@ def _parse_upstreams(value: str) -> list[str]:
 
 def load_settings() -> Settings:
     load_dotenv()
-    upstreams_raw = os.getenv("UPSTREAMS", "")
-    upstreams = _parse_upstreams(upstreams_raw)
-    if not upstreams:
-        upstreams = ["http://localhost:9000"]
+    http_upstreams_raw = os.getenv("UPSTREAMS", "")
+    http_upstreams = _parse_upstreams(http_upstreams_raw)
+    if not http_upstreams:
+        http_upstreams = ["http://localhost:9000"]
+
+    ws_upstreams_raw = os.getenv("WS_UPSTREAMS", "")
+    ws_upstreams = _parse_upstreams(ws_upstreams_raw)
 
     strategy = os.getenv("UPSTREAM_STRATEGY", "random").lower()
     connect_timeout = float(os.getenv("CONNECT_TIMEOUT", "5"))
     read_timeout = float(os.getenv("READ_TIMEOUT", "30"))
 
     return Settings(
-        upstreams=upstreams,
+        http_upstreams=http_upstreams,
+        ws_upstreams=ws_upstreams,
         strategy=strategy,
         connect_timeout=connect_timeout,
         read_timeout=read_timeout,
