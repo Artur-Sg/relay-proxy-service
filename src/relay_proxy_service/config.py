@@ -35,7 +35,7 @@ class Settings:
 
 
 def _parse_upstreams(value: str) -> list[str]:
-    items = [item.strip().rstrip("/") for item in value.split(",")]
+    items = [item.strip() for item in value.split(",")]
     return [item for item in items if item]
 
 
@@ -88,10 +88,15 @@ class UpstreamPicker:
 
 def build_upstream_url(upstream_base: str, path: str, query: str | None) -> str:
     base = urlsplit(upstream_base)
-    base_path = base.path.rstrip("/")
+    base_path_raw = base.path or ""
+    base_path = base_path_raw.rstrip("/")
+    base_has_trailing_slash = base_path_raw.endswith("/")
 
     if path == "/":
-        full_path = base_path or "/"
+        if not base_path:
+            full_path = "/"
+        else:
+            full_path = f"{base_path}/" if base_has_trailing_slash else base_path
     else:
         if base_path:
             full_path = f"{base_path}{path}"
