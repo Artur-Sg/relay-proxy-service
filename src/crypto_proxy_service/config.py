@@ -29,6 +29,7 @@ class Settings:
     strategy: str
     connect_timeout: float
     read_timeout: float
+    max_body_bytes: int
 
 
 def _parse_upstreams(value: str) -> list[str]:
@@ -49,6 +50,7 @@ def load_settings() -> Settings:
     strategy = os.getenv("UPSTREAM_STRATEGY", "random").lower()
     connect_timeout = float(os.getenv("CONNECT_TIMEOUT", "5"))
     read_timeout = float(os.getenv("READ_TIMEOUT", "30"))
+    max_body_bytes = int(os.getenv("MAX_BODY_BYTES", str(5 * 1024 * 1024)))
 
     return Settings(
         http_upstreams=http_upstreams,
@@ -56,6 +58,7 @@ def load_settings() -> Settings:
         strategy=strategy,
         connect_timeout=connect_timeout,
         read_timeout=read_timeout,
+        max_body_bytes=max_body_bytes,
     )
 
 

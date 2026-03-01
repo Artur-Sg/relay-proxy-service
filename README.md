@@ -24,6 +24,7 @@ uvicorn crypto_proxy_service.main:app --host 0.0.0.0 --port 8080 --reload
 ## Routes
 - HTTP: `/{path}` (all methods)
 - WebSocket: `/ws/{path}`
+- Metrics: `/metrics`
 
 ## Notes
 - Hop-by-hop headers are filtered.
