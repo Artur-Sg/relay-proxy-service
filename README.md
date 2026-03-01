@@ -10,13 +10,14 @@ Skeleton Python service that accepts HTTP and WebSocket requests and proxies the
 2. Install dependencies.
 
 ```bash
-python -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
-pip install -e .
+python -m pip install -e .
 ```
 
 ## Run
 ```bash
+source .venv/bin/activate
 uvicorn crypto_proxy_service.main:app --host 0.0.0.0 --port 8080 --reload
 ```
 
@@ -27,3 +28,37 @@ uvicorn crypto_proxy_service.main:app --host 0.0.0.0 --port 8080 --reload
 ## Notes
 - Hop-by-hop headers are filtered.
 - WebSocket proxying is basic; add auth, timeouts, and better error handling as needed.
+
+## Local mock upstreams
+Run two mock upstreams with different ports/names:
+
+```bash
+source .venv/bin/activate
+MOCK_NAME=upstream-1 uvicorn crypto_proxy_service.mock_upstream:app --host 0.0.0.0 --port 9000 --reload
+```
+
+```bash
+source .venv/bin/activate
+MOCK_NAME=upstream-2 uvicorn crypto_proxy_service.mock_upstream:app --host 0.0.0.0 --port 9001 --reload
+```
+
+Then set `.env`:
+```
+UPSTREAMS=http://localhost:9000,http://localhost:9001
+UPSTREAM_STRATEGY=round_robin
+```
+
+Example requests:
+```bash
+curl -i http://localhost:8080/health
+```
+
+```bash
+curl -i 'http://localhost:8080/prices?symbol=ETHUSDT&limit=3'
+```
+
+```bash
+curl -i -X POST http://localhost:8080/orders \
+  -H 'Content-Type: application/json' \
+  -d '{"symbol":"BTCUSDT","side":"buy","qty":0.1,"price":68000}'
+```
