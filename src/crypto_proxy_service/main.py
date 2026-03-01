@@ -18,15 +18,17 @@ app = FastAPI(title="Crypto Proxy Service")
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"])
 async def http_proxy(path: str, request: Request):
-    upstream = http_picker.pick()
-    return await proxy_http_request(request, upstream, settings)
+    first = http_picker.pick()
+    ordered = [first] + [u for u in settings.http_upstreams if u != first]
+    return await proxy_http_request(request, ordered, settings)
 
 
 @app.websocket("/ws/{path:path}")
 async def ws_proxy(path: str, websocket: WebSocket):
-    upstream = ws_picker.pick()
+    first = ws_picker.pick()
+    ordered = [first] + [u for u in (settings.ws_upstreams or settings.http_upstreams) if u != first]
     full_path = f"/{path}"
-    await proxy_ws_request(websocket, upstream, full_path, websocket.url.query or None, settings)
+    await proxy_ws_request(websocket, ordered, full_path, websocket.url.query or None, settings)
 
 
 def run() -> None:
