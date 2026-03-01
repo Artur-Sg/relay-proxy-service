@@ -7,6 +7,7 @@ from itertools import cycle
 from typing import Iterable
 
 from dotenv import load_dotenv
+from urllib.parse import SplitResult, urlsplit, urlunsplit
 
 
 HOP_BY_HOP_HEADERS = {
@@ -65,3 +66,42 @@ class UpstreamPicker:
         if self._strategy == "round_robin":
             return next(self._cycle)
         return random.choice(self._upstreams)
+
+
+def build_upstream_url(upstream_base: str, path: str, query: str | None) -> str:
+    base = urlsplit(upstream_base)
+    base_path = base.path.rstrip("/")
+
+    if path == "/":
+        full_path = base_path or "/"
+    else:
+        if base_path:
+            full_path = f"{base_path}{path}"
+        else:
+            full_path = path
+
+    if query:
+        if base.query:
+            full_query = f"{base.query}&{query}"
+        else:
+            full_query = query
+    else:
+        full_query = base.query
+
+    rebuilt = SplitResult(
+        scheme=base.scheme,
+        netloc=base.netloc,
+        path=full_path,
+        query=full_query,
+        fragment="",
+    )
+    return urlunsplit(rebuilt)
+
+
+def build_upstream_ws_url(upstream_base: str, path: str, query: str | None) -> str:
+    base_url = build_upstream_url(upstream_base, path, query)
+    if base_url.startswith("http://"):
+        return base_url.replace("http://", "ws://", 1)
+    if base_url.startswith("https://"):
+        return base_url.replace("https://", "wss://", 1)
+    return base_url

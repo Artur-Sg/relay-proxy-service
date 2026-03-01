@@ -5,7 +5,7 @@ import asyncio
 import websockets
 from fastapi import WebSocket
 
-from crypto_proxy_service.config import Settings
+from crypto_proxy_service.config import Settings, build_upstream_ws_url
 
 
 async def _relay_ws(client_ws: WebSocket, upstream_ws: websockets.WebSocketClientProtocol) -> None:
@@ -39,17 +39,12 @@ async def proxy_ws_request(
     client_ws: WebSocket,
     upstream_base: str,
     path: str,
+    query: str | None,
     settings: Settings,
 ) -> None:
     await client_ws.accept()
 
-    ws_base = upstream_base
-    if ws_base.startswith("http://"):
-        ws_base = ws_base.replace("http://", "ws://", 1)
-    elif ws_base.startswith("https://"):
-        ws_base = ws_base.replace("https://", "wss://", 1)
-
-    ws_url = f"{ws_base}{path}"
+    ws_url = build_upstream_ws_url(upstream_base, path, query)
     async with websockets.connect(
         ws_url,
         open_timeout=settings.connect_timeout,

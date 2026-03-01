@@ -24,9 +24,7 @@ async def http_proxy(path: str, request: Request):
 async def ws_proxy(path: str, websocket: WebSocket):
     upstream = picker.pick()
     full_path = f"/{path}"
-    if websocket.url.query:
-        full_path = f"{full_path}?{websocket.url.query}"
-    await proxy_ws_request(websocket, upstream, full_path, settings)
+    await proxy_ws_request(websocket, upstream, full_path, websocket.url.query or None, settings)
 
 
 def run() -> None:

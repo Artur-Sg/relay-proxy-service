@@ -62,3 +62,25 @@ curl -i -X POST http://localhost:8080/orders \
   -H 'Content-Type: application/json' \
   -d '{"symbol":"BTCUSDT","side":"buy","qty":0.1,"price":68000}'
 ```
+
+## Real upstream example (Polygon Amoy)
+Configure `.env` to use real upstreams:
+```
+UPSTREAMS=https://polygon-amoy.api.onfinality.io/rpc?apikey=YOUR_API_KEY,https://polygon-amoy.drpc.org
+UPSTREAM_STRATEGY=random
+```
+
+If an upstream includes a path (like `/rpc`), call the proxy root `/` so it maps to that base path.
+
+Example request through the proxy:
+```bash
+curl --request POST \
+  --url http://localhost:8080/ \
+  --header 'content-type: application/json' \
+  --data '{
+  "jsonrpc": "2.0",
+  "method": "eth_blockNumber",
+  "params": [],
+  "id": 1
+}'
+```

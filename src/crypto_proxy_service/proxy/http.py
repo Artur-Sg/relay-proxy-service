@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 from typing import Iterable
+from urllib.parse import urlsplit
 
 import httpx
 from fastapi import Request, Response
 
-from crypto_proxy_service.config import HOP_BY_HOP_HEADERS, Settings
+from crypto_proxy_service.config import (
+    HOP_BY_HOP_HEADERS,
+    Settings,
+    build_upstream_url,
+)
 
 
 def _filter_headers(headers: Iterable[tuple[str, str]]) -> dict[str, str]:
@@ -22,14 +27,16 @@ async def proxy_http_request(
     upstream_base: str,
     settings: Settings,
 ) -> Response:
-    path = request.url.path
-    if request.url.query:
-        path = f"{path}?{request.url.query}"
-
-    url = f"{upstream_base}{path}"
+    url = build_upstream_url(
+        upstream_base,
+        request.url.path,
+        request.url.query or None,
+    )
 
     body = await request.body()
     headers = _filter_headers(request.headers.items())
+    # Ensure upstream sees the correct Host header.
+    headers["host"] = urlsplit(url).netloc
 
     timeout = httpx.Timeout(settings.read_timeout, connect=settings.connect_timeout)
     async with httpx.AsyncClient(timeout=timeout) as client:
